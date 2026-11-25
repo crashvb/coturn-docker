@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+# Configure: coturn
+if [[ ! -e "${EP_RUN}" ]] ; then
+	log "Configuring $(basename "${0}") for first run ..."
+
+	# Generate keypairs ...
+	generate_rsakey coturn
+
+	# turnserver.conf
+	if [[ ! -e "${COTURN_CONFIG}/turnserver.conf" ]] ; then
+		if [[ ! "${COTURN_PORT_RANGE}" =~ ^([1-9][0-9]{0,4})-([1-9][0-9]{0,4})$ ]] || \
+			(( BASH_REMATCH[1] > BASH_REMATCH[2] || BASH_REMATCH[2] > 65535 )) ; then
+			log "Invalid COTURN_PORT_RANGE: ${COTURN_PORT_RANGE}"
+			exit 1
+		fi
+		export COTURN_MIN_PORT="${BASH_REMATCH[1]}" COTURN_MAX_PORT="${BASH_REMATCH[2]}"
+		export COTURN_IP_LISTENING="${COTURN_IP_LISTENING//,/$'\n'listening-ip=}" COTURN_IP_RELAY="${COTURN_IP_RELAY//,/$'\n'relay-ip=}"
+		render_template /usr/local/share/coturn/turnserver.conf "${COTURN_CONFIG}/turnserver.conf" "\${COTURN_IP_LISTENING} \${COTURN_IP_RELAY} \${COTURN_MIN_PORT} \${COTURN_MAX_PORT}"
+	else
+		log "Skipping: turnserver.conf ..."
+	fi
+fi
+

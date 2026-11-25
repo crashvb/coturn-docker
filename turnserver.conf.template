@@ -1,0 +1,22 @@
+# Listening ports
+listening-ip=${COTURN_IP_LISTENING}
+relay-ip=${COTURN_IP_RELAY}
+listening-port=3478
+tls-listening-port=5349
+
+# Total isolation / Logging
+cli=false
+log-file=stdout
+stun-only
+
+# WebRTC security and identification
+fingerprint
+lt-cred-mech
+realm=yourdomain.com
+
+# Create an authenticated TURN user (Change these values!)
+user=myuser:mypassword
+
+# Limit the dynamic port range for easier firewall management
+min-port=${COTURN_MIN_PORT}
+max-port=${COTURN_MAX_PORT}
